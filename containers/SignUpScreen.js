@@ -1,0 +1,238 @@
+import React from "react";
+import { useState } from "react";
+import {
+  Button,
+  Text,
+  TextInput,
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  Image,
+} from "react-native";
+
+//Colors:
+import colors from "../assets/colors";
+const { pinkAir, grey } = colors;
+
+//Constant pour récupérer las dimensions des devices
+import Constants from "expo-constants";
+
+//Pour que le clavier du mobile ne supperpose pas le contenu
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scrollview";
+
+//UseNavigation pour pouvoir mettre des liens
+import { useNavigation } from "@react-navigation/core";
+
+//Axios pour pouvoir faire une requete au serveur
+const axios = require("axios");
+
+export default function SignUpScreen({ setToken }) {
+  const navigation = useNavigation();
+
+  //States of input
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [description, setDescription] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
+  const [alert, setAlert] = useState("");
+
+  //Fonction handleSubmit pour le onPress du bouton Sign up
+  const handleSubmit = async (event) => {
+    try {
+      const userToken = "secret-token";
+      setToken(userToken);
+      const response = await axios.post(
+        "https://express-airbnb-api.herokuapp.com/user/sign_up",
+        {
+          email: email,
+          username: username,
+          description: description,
+          password: password,
+        },
+        { headers: { "api-token": "secret-token" } }
+      );
+      if (
+        email === "" ||
+        username === "" ||
+        description === "" ||
+        password === "" ||
+        confirmPass === ""
+      ) {
+        setAlert("Please fill all fields");
+      } else if (password !== confirmPass) {
+        setAlert("Password and confirmation not match");
+      } else {
+        setAlert("");
+      }
+    } catch (error) {
+      if (error.response.status === 409) {
+        setAlert("This email already have an account !");
+      }
+      console.log(error.message);
+    }
+  };
+
+  return (
+    <KeyboardAwareScrollView>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.logoZone}>
+          <Image
+            source={require("../assets/img/logo.png")}
+            style={styles.logoSign}
+          />
+          <Text style={styles.signTitle}>Sign up</Text>
+        </View>
+        <View style={styles.formContent}>
+          <View style={styles.inputContent}>
+            <TextInput
+              style={styles.input}
+              placeholder="email"
+              autoCompleteType="email"
+              keyboardType="email-address"
+              onChangeText={(text) => {
+                setEmail(text);
+              }}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="username"
+              onChangeText={(text) => {
+                setUsername(text);
+              }}
+            />
+            <TextInput
+              style={styles.inputArea}
+              multiline={true}
+              numberOfLines={5}
+              placeholder="Describe yourself in a few words..."
+              onChangeText={(text) => {
+                setDescription(text);
+              }}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              secureTextEntry={true}
+              onChangeText={(text) => {
+                setPassword(text);
+              }}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm password"
+              secureTextEntry={true}
+              onChangeText={(text) => {
+                setConfirmPass(text);
+              }}
+            />
+          </View>
+          <View style={styles.buttonsContent}>
+            <Text style={styles.msgAlert}>{alert}</Text>
+            <TouchableOpacity
+              style={styles.button}
+              disabled={false}
+              onPress={handleSubmit}
+            >
+              <Text style={styles.txtButton}>Sign up</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.txtLink}
+              onPress={() => {
+                navigation.navigate("SignIn");
+              }}
+            >
+              <Text>Already have an account? Sign in</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    </KeyboardAwareScrollView>
+  );
+}
+const styles = StyleSheet.create({
+  // *---- GLOBAL ----*
+
+  container: {
+    alignItems: "center",
+    paddingTop: Platform.OS === "android" ? Constants.statusBarHeight : 0,
+  },
+
+  // *---- LOGO ZONE ----*
+  logoZone: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 30,
+  },
+
+  logoSign: {
+    height: 100,
+    width: 100,
+  },
+
+  signTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: grey,
+  },
+
+  // *---- FORM ----*
+
+  formContent: {
+    // backgroundColor: "purple",
+    width: "80%",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flex: 1,
+  },
+
+  inputContent: {
+    alignItems: "center",
+    width: "100%",
+  },
+
+  input: {
+    width: "100%",
+    height: 50,
+    // backgroundColor: "blue",
+    borderBottomColor: pinkAir,
+    borderBottomWidth: 1,
+  },
+
+  inputArea: {
+    height: 100,
+    width: "100%",
+    borderColor: pinkAir,
+    borderWidth: 1,
+    marginVertical: 10,
+    padding: 10,
+    textAlignVertical: "top",
+  },
+
+  buttonsContent: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  button: {
+    borderColor: pinkAir,
+    borderRadius: 30,
+    borderWidth: 2,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 60,
+    width: 200,
+    marginVertical: 20,
+  },
+
+  txtButton: {
+    color: grey,
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+
+  msgAlert: {
+    color: pinkAir,
+  },
+});
