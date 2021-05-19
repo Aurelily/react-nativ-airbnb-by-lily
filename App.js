@@ -17,6 +17,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [userToken, setUserToken] = useState(null);
 
+  // Fonction setToken pour enregistrer ou supprimer le token de l'AsyncStorage et du state userToken
   const setToken = async (token) => {
     if (token) {
       AsyncStorage.setItem("userToken", token);

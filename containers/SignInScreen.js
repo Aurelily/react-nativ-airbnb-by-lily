@@ -28,7 +28,39 @@ export default function SignInScreen({ setToken }) {
   //States of input
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState("");
+
+  //Fonction handleSubmit pour le onPress du bouton Sign in
+  const handleSubmit = async (event) => {
+    try {
+      // const userToken = "secret-token";
+      // setToken(userToken);
+      setIsLoading(true);
+      const response = await axios.post(
+        "https://express-airbnb-api.herokuapp.com/user/log_in",
+        {
+          email: email,
+          password: password,
+        }
+      );
+      console.log(response.data);
+      if (response.data.token) {
+        setUser(response.data.token);
+        setIsLoading(false);
+      } else {
+        setAlert("Une erreur est survenue, veuillez réssayer.");
+      }
+    } catch (error) {
+      console.log(error.response.data.error);
+      if (error.response.data.error === "Unauthorized") {
+        setIsLoading(false);
+        setAlert("Mauvais email et/ou mot de passe");
+      } else {
+        setErrorMessage("An error occurred");
+      }
+    }
+  };
 
   return (
     <KeyboardAwareScrollView>
@@ -46,6 +78,7 @@ export default function SignInScreen({ setToken }) {
               style={styles.input}
               placeholder="email"
               autoCompleteType="email"
+              autoCapitalize="none"
               keyboardType="email-address"
               onChangeText={(text) => {
                 setEmail(text);
@@ -64,16 +97,8 @@ export default function SignInScreen({ setToken }) {
             <Text style={styles.msgAlert}>{alert}</Text>
             <TouchableOpacity
               style={styles.button}
-              disabled={false}
-              onPress={async () => {
-                const userToken = "secret-token";
-                setToken(userToken);
-                if (email === "" || password === "") {
-                  setAlert("Please fill all fields");
-                } else {
-                  setAlert("");
-                }
-              }}
+              disabled={isLoading ? true : false}
+              onPress={handleSubmit}
             >
               <Text style={styles.txtButton}>Sign in</Text>
             </TouchableOpacity>

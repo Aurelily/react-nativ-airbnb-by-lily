@@ -27,7 +27,7 @@ import { useNavigation } from "@react-navigation/core";
 //Axios pour pouvoir faire une requete au serveur
 const axios = require("axios");
 
-export default function SignUpScreen({ setToken }) {
+export default function SignUpScreen() {
   const navigation = useNavigation();
 
   //States of input
@@ -35,42 +35,51 @@ export default function SignUpScreen({ setToken }) {
   const [username, setUsername] = useState("");
   const [description, setDescription] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPass, setConfirmPass] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [alert, setAlert] = useState("");
 
-  //Fonction handleSubmit pour le onPress du bouton Sign up
-  const handleSubmit = async (event) => {
-    try {
-      const userToken = "secret-token";
-      setToken(userToken);
-      const response = await axios.post(
-        "https://express-airbnb-api.herokuapp.com/user/sign_up",
-        {
-          email: email,
-          username: username,
-          description: description,
-          password: password,
-        },
-        { headers: { "api-token": "secret-token" } }
-      );
-      if (
-        email === "" ||
-        username === "" ||
-        description === "" ||
-        password === "" ||
-        confirmPass === ""
-      ) {
-        setAlert("Please fill all fields");
-      } else if (password !== confirmPass) {
-        setAlert("Password and confirmation not match");
+  const handleSubmit = async () => {
+    if (email && username && password && confirmPassword && description) {
+      // Si tous les champs sont remplis
+      if (password === confirmPassword) {
+        // si les 2 MDP sont identiques
+        try {
+          // on passe à la requête
+          const response = await axios.post(
+            "https://express-airbnb-api.herokuapp.com/user/sign_up",
+            {
+              email,
+              username,
+              password,
+              description,
+            }
+          );
+
+          console.log(response.data);
+
+          if (response.data.token) {
+            setAlert("Requête réussie");
+            // navigation.navigate("SignIn");
+          }
+        } catch (e) {
+          // console.log(Object.keys(e));
+          // console.log(e.response.data.error);
+          if (
+            e.response.data.error === "This email already has an account." ||
+            e.response.data.error === "This username already has an account."
+          ) {
+            setAlert(e.response.data.error);
+          } else {
+            setAlert("An error occurred");
+          }
+        }
       } else {
-        setAlert("");
+        // si les 2 MDP ne sont pas identiques
+        setAlert("MDP doivent être identiques");
       }
-    } catch (error) {
-      if (error.response.status === 409) {
-        setAlert("This email already have an account !");
-      }
-      console.log(error.message);
+    } else {
+      // Si tous les champs ne sont pas remplis
+      setAlert("Remplir tous les champs");
     }
   };
 
@@ -124,7 +133,7 @@ export default function SignUpScreen({ setToken }) {
               placeholder="Confirm password"
               secureTextEntry={true}
               onChangeText={(text) => {
-                setConfirmPass(text);
+                setConfirmPassword(text);
               }}
             />
           </View>
