@@ -28,7 +28,7 @@ const { pinkAir, grey } = colors;
 // import RoomCard from "../components/RoomCard";
 
 export default function HomeScreen(props) {
-  console.log(props);
+  // console.log(props);
   const navigation = useNavigation();
 
   //declaration des datas

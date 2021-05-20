@@ -23,7 +23,7 @@ const { pinkAir, grey } = colors;
 import RoomCard from "../components/RoomCard";
 
 function RoomScreen({ route }) {
-  console.log(route);
+  // console.log(route);
 
   //recup de l'id de l'annonce
   const id = route.params.id;
