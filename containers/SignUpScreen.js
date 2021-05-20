@@ -37,6 +37,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [alert, setAlert] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async () => {
     if (email && username && password && confirmPassword && description) {
@@ -98,7 +99,8 @@ export default function SignUpScreen() {
             <TextInput
               style={styles.input}
               placeholder="email"
-              autoCompleteType="email"
+              autoCompleteType="off"
+              autoCapitalize="none"
               keyboardType="email-address"
               onChangeText={(text) => {
                 setEmail(text);
@@ -107,12 +109,16 @@ export default function SignUpScreen() {
             <TextInput
               style={styles.input}
               placeholder="username"
+              autoCompleteType="off"
+              autoCapitalize="none"
               onChangeText={(text) => {
                 setUsername(text);
               }}
             />
             <TextInput
               style={styles.inputArea}
+              autoCompleteType="off"
+              autoCapitalize="none"
               multiline={true}
               numberOfLines={5}
               placeholder="Describe yourself in a few words..."
@@ -123,6 +129,8 @@ export default function SignUpScreen() {
             <TextInput
               style={styles.input}
               placeholder="Password"
+              autoCompleteType="off"
+              autoCapitalize="none"
               secureTextEntry={true}
               onChangeText={(text) => {
                 setPassword(text);
@@ -130,6 +138,8 @@ export default function SignUpScreen() {
             />
             <TextInput
               style={styles.input}
+              autoCompleteType="off"
+              autoCapitalize="none"
               placeholder="Confirm password"
               secureTextEntry={true}
               onChangeText={(text) => {

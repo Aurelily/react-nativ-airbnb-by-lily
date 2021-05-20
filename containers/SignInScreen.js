@@ -22,6 +22,9 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scrollview"
 //Axios pour envoyer des requetes
 const axios = require("axios");
 
+//Import asyncStorage pour stocker le token
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export default function SignInScreen({ setToken }) {
   const navigation = useNavigation();
 
@@ -34,8 +37,6 @@ export default function SignInScreen({ setToken }) {
   //Fonction handleSubmit pour le onPress du bouton Sign in
   const handleSubmit = async (event) => {
     try {
-      // const userToken = "secret-token";
-      // setToken(userToken);
       setIsLoading(true);
       const response = await axios.post(
         "https://express-airbnb-api.herokuapp.com/user/log_in",
@@ -45,14 +46,20 @@ export default function SignInScreen({ setToken }) {
         }
       );
       console.log(response.data);
+
       if (response.data.token) {
-        setUser(response.data.token);
+        const userToken = response.data.token;
+        setToken(userToken);
+
+        //Je stock le token sur le asyncStorage
+        await AsyncStorage.setItem("userToken", userToken);
+
         setIsLoading(false);
       } else {
         setAlert("Une erreur est survenue, veuillez réssayer.");
       }
     } catch (error) {
-      console.log(error.response.data.error);
+      // console.log(error.response.data.error);
       if (error.response.data.error === "Unauthorized") {
         setIsLoading(false);
         setAlert("Mauvais email et/ou mot de passe");
@@ -77,7 +84,7 @@ export default function SignInScreen({ setToken }) {
             <TextInput
               style={styles.input}
               placeholder="email"
-              autoCompleteType="email"
+              autoCompleteType="off"
               autoCapitalize="none"
               keyboardType="email-address"
               onChangeText={(text) => {
@@ -87,6 +94,8 @@ export default function SignInScreen({ setToken }) {
             <TextInput
               style={styles.input}
               placeholder="Password"
+              autoCompleteType="off"
+              autoCapitalize="none"
               secureTextEntry={true}
               onChangeText={(text) => {
                 setPassword(text);
