@@ -120,7 +120,6 @@ export default function SignUpScreen() {
               autoCompleteType="off"
               autoCapitalize="none"
               multiline={true}
-              numberOfLines={5}
               placeholder="Describe yourself in a few words..."
               onChangeText={(text) => {
                 setDescription(text);

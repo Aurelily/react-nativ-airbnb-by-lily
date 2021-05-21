@@ -47,6 +47,8 @@ export default function App() {
   const getUserId = async (userId) => {
     if (userId) {
       AsyncStorage.setItem("userId", userId);
+    } else {
+      AsyncStorage.removeItem("userId");
     }
     setUserId(userId);
   };
@@ -195,8 +197,9 @@ export default function App() {
                         {(props) => (
                           <ProfileScreen
                             {...props}
-                            userToken={userToken}
                             userId={userId}
+                            userToken={userToken}
+                            setToken={setToken}
                           />
                         )}
                       </Stack.Screen>
