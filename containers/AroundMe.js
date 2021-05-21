@@ -1,131 +1,83 @@
-import React from "react";
-import {
-  Button,
-  Text,
-  View,
-  Image,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
-
-import { useState, useEffect } from "react";
-
-//Import d'Axios pour pouvoir faire des requetes vers l'API après installation via terminal : yarn add axios
+import React, { useEffect, useState } from "react";
+import MapView from "react-native-maps";
+import { Text, View, StyleSheet, ActivityIndicator } from "react-native";
+import * as Location from "expo-location";
 import axios from "axios";
 
-// Package expo-location pour accéder et récupérer les coordonnées GPS de l'appareil
-import * as Location from "expo-location";
-
-// Package react-native-maps pour afficher une Map
-import MapView from "react-native-maps";
-
-//Colors:
-import colors from "../assets/colors";
-const { pinkAir, grey } = colors;
-
 const AroundMe = () => {
-  //declaration des datas
-  const [data, setData] = useState();
+  const [lat, setLat] = useState(null);
+  const [long, setLong] = useState(null);
+  const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  //Pour affichier les coordonnées de l'appareil quand celà sera récupéré
-  const [latitude, setLatitude] = useState(null);
-  const [longitude, setLongitude] = useState(null);
-  const [coords, setCoords] = useState([]);
-
-  //Chargement des données de l'API via la fonction fetchData
   useEffect(() => {
-    const getPermission = async () => {
+    const getPermissionAndLocation = async () => {
       try {
-        // Demander la permission d'accéder aux coordonnées GPS de l'appareil
         const { status } = await Location.requestForegroundPermissionsAsync();
+
+        let response;
         if (status === "granted") {
-          // Récupérer la localisation (coordonnées GPS) de l'appareil
+          // 1 - récupérer les coordonnées GPS de l'appareil
           const location = await Location.getCurrentPositionAsync();
+          // console.log(location.coords.latitude);
+          // console.log(location.coords.longitude);
+          setLat(location.coords.latitude);
+          setLong(location.coords.longitude);
 
-          //Je récupère mes datas de l'API
-          try {
-            const response = await axios.get(
-              "https://express-airbnb-api.herokuapp.com/rooms/around"
-            );
-            console.log(response.data);
-            setData(response.data);
-            setIsLoading(false);
-          } catch (error) {
-            console.log(error);
-          }
-          //Je récupère les coordonnées des rooms dans un tableau de données
-          let coordsTab = [...coords];
-          for (let i = 0; i < data.length; i++) {
-            coordsTab.push({
-              latitude: data[i].location[1],
-              longitude: data[i].location[0],
-            });
-          }
-          setCoords(coordTab);
-
-          //Je set la latitude et la longitude des rooms
-          setLatitude(location.coords.latitude);
-          setLongitude(location.coords.longitude);
+          // 2 - faire une requête en utilisant ces coordonnées (pour récupérer des annonces)
+          response = await axios.get(
+            `https://express-airbnb-api.herokuapp.com/rooms/around?latitude=${location.coords.latitude}&longitude=${location.coords.longitude}`
+          );
         } else {
-          alert("Accès refusé");
+          // faire une requête sans les coordonnées de l'utilisateur (pour récupérer toutes les annonces)
+          response = await axios.get(
+            `https://express-airbnb-api.herokuapp.com/rooms/around`
+          );
         }
-      } catch (error) {
-        console.log(error);
+
+        // console.log(response.data);
+        setData(response.data);
+        setIsLoading(false);
+      } catch (e) {
+        console.log(e);
       }
     };
-    getPermission();
-  }, [coords]);
+
+    getPermissionAndLocation();
+  }, []);
 
   return isLoading ? (
-    <View style={[styles.container, styles.horizontal]}>
-      <ActivityIndicator size="large" color="pinkAir" animating={true} />
-    </View>
+    <ActivityIndicator />
   ) : (
-    <>
-      <MapView
-        style={styles.map}
-        // // Pour centrer la carte sur Paris pour voir les locs :
-        // initialRegion={{
-        //   latitude: 48.856614,
-        //   longitude: 2.3522219,
-        //   latitudeDelta: 0.1,
-        //   longitudeDelta: 0.1,
-        // }}
-        // Pour afficher la position de l'utilisateur :
-        showsUserLocation={true}
-      >
-        {coords.map((item, index) => {
-          return (
-            <MapView.Marker
-              key={index}
-              coordinate={{
-                latitude: item.latitude,
-                longitude: item.longitude,
-              }}
-            />
-          );
-        })}
-      </MapView>
-      <Text>Latitude : {latitude}</Text>
-      <Text>Longitude : {longitude}</Text>
-    </>
+    <MapView
+      initialRegion={{
+        latitude: lat ? lat : 48.866667,
+        longitude: long ? long : 2.333333,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
+      }}
+      showsUserLocation={true}
+      style={styles.map}
+    >
+      {data.map((item) => {
+        return (
+          <MapView.Marker
+            key={item._id}
+            coordinate={{
+              latitude: item.location[1],
+              longitude: item.location[0],
+            }}
+          />
+        );
+      })}
+    </MapView>
   );
 };
 
 export default AroundMe;
 
 const styles = StyleSheet.create({
-  // *---- GLOBAL ----*
-
-  container: {
-    backgroundColor: "white",
-    padding: 10,
-  },
-
   map: {
-    height: 400,
-    width: "100%",
-    marginTop: 50,
+    height: "100%",
   },
 });

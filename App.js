@@ -3,8 +3,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons } from "@expo/vector-icons";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import HomeScreen from "./containers/HomeScreen";
 import ProfileScreen from "./containers/ProfileScreen";
 import SignInScreen from "./containers/SignInScreen";
@@ -15,6 +13,14 @@ import AroundMe from "./containers/AroundMe";
 
 import { Platform } from "react-native";
 
+// Icons
+import {
+  Ionicons,
+  AntDesign,
+  Feather,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
+
 //import composant
 import Logo from "./components/logo";
 
@@ -24,6 +30,7 @@ const Stack = createStackNavigator();
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [userToken, setUserToken] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   // Fonction setToken pour enregistrer ou supprimer le token de l'AsyncStorage et du state userToken
   const setToken = async (token) => {
@@ -36,16 +43,26 @@ export default function App() {
     setUserToken(token);
   };
 
+  // Fonction getUserId pour enregistrer le userId dans l'AsyncStorage
+  const getUserId = async (userId) => {
+    if (userId) {
+      AsyncStorage.setItem("userId", userId);
+    }
+    setUserId(userId);
+  };
+
   useEffect(() => {
-    // Fetch the token from storage then navigate to our appropriate place
+    // Fetch the token and userId from storage then navigate to our appropriate place
     const bootstrapAsync = async () => {
       // We should also handle error for production apps
       const userToken = await AsyncStorage.getItem("userToken");
+      const userId = await AsyncStorage.getItem("userId");
 
       // This will switch to the App screen or Auth screen and this loading
       // screen will be unmounted and thrown away.
       setIsLoading(false);
       setUserToken(userToken);
+      setUserId(userId);
     };
 
     bootstrapAsync();
@@ -57,10 +74,10 @@ export default function App() {
         // No token found, user isn't signed in
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="SignIn">
-            {() => <SignInScreen setToken={setToken} />}
+            {() => <SignInScreen setToken={setToken} getUserId={getUserId} />}
           </Stack.Screen>
           <Stack.Screen name="SignUp">
-            {() => <SignUpScreen setToken={setToken} />}
+            {() => <SignUpScreen setToken={setToken} getUserId={getUserId} />}
           </Stack.Screen>
         </Stack.Navigator>
       ) : (
@@ -114,7 +131,7 @@ export default function App() {
                 <Tab.Screen
                   name="AroundMe"
                   options={{
-                    tabBarLabel: "AroundMe",
+                    tabBarLabel: "Around Me",
                     tabBarIcon: ({ color, size }) => (
                       <MaterialCommunityIcons
                         name="map-marker-outline"
@@ -125,7 +142,15 @@ export default function App() {
                   }}
                 >
                   {() => (
-                    <Stack.Navigator>
+                    <Stack.Navigator
+                      screenOptions={{
+                        headerTitle: () => <Logo size="small" />,
+                        headerTitleStyle: {
+                          textAlign: "center",
+                          alignItems: "center",
+                        },
+                      }}
+                    >
                       <Stack.Screen
                         name="AroundMe"
                         options={{
@@ -133,6 +158,47 @@ export default function App() {
                         }}
                       >
                         {() => <AroundMe />}
+                      </Stack.Screen>
+                    </Stack.Navigator>
+                  )}
+                </Tab.Screen>
+                <Tab.Screen
+                  name="ProfileScreen"
+                  options={{
+                    tabBarLabel: "My profile",
+                    tabBarIcon: ({ color, size }) => (
+                      <MaterialCommunityIcons
+                        name="account"
+                        size={size}
+                        color={color}
+                      />
+                    ),
+                  }}
+                >
+                  {() => (
+                    <Stack.Navigator
+                      screenOptions={{
+                        headerTitle: () => <Logo size="small" />,
+                        headerTitleStyle: {
+                          textAlign: "center",
+                          alignItems: "center",
+                        },
+                      }}
+                    >
+                      <Stack.Screen
+                        name="ProfileScreen"
+                        options={{
+                          title: "ProfileScreen",
+                          tabBarLabel: "ProfileScreen",
+                        }}
+                      >
+                        {(props) => (
+                          <ProfileScreen
+                            {...props}
+                            userToken={userToken}
+                            userId={userId}
+                          />
+                        )}
                       </Stack.Screen>
                     </Stack.Navigator>
                   )}

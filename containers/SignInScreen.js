@@ -25,7 +25,7 @@ const axios = require("axios");
 //Import asyncStorage pour stocker le token
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function SignInScreen({ setToken }) {
+export default function SignInScreen({ setToken, getUserId }) {
   const navigation = useNavigation();
 
   //States of input
@@ -45,14 +45,17 @@ export default function SignInScreen({ setToken }) {
           password: password,
         }
       );
-      console.log(response.data);
+      // console.log(response.data);
 
-      if (response.data.token) {
+      if (response.data.token && response.data.id) {
         const userToken = response.data.token;
+        const userId = response.data.id;
         setToken(userToken);
+        getUserId(userId);
 
-        //Je stock le token sur le asyncStorage
+        //Je stock le token et le userId sur le asyncStorage
         await AsyncStorage.setItem("userToken", userToken);
+        await AsyncStorage.setItem("userId", userId);
 
         setIsLoading(false);
       } else {

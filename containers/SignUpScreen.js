@@ -56,7 +56,7 @@ export default function SignUpScreen() {
             }
           );
 
-          console.log(response.data);
+          // console.log(response.data);
 
           if (response.data.token) {
             setAlert("Requête réussie");
