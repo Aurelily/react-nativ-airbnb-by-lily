@@ -28,12 +28,13 @@ export default function ProfileScreen({ userId, userToken, setToken }) {
   const [data, setData] = useState();
 
   //Pour les input du formulaire de recup des datas
+  const [profilePic, setProfilePic] = useState(null);
   const [email, setEmail] = useState(null);
   const [userName, setUsername] = useState(null);
   const [description, setDescription] = useState(null);
 
   //Pour l'acces aux photos
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedPicture, setSelectedPicture] = useState(null);
   const [takenPicture, setTakenPicture] = useState(null);
 
   //Pour le chargement des datas et l'upload des photos
@@ -46,7 +47,7 @@ export default function ProfileScreen({ userId, userToken, setToken }) {
 
     if (status === "granted") {
       const result = await ImagePicker.launchImageLibraryAsync();
-      // console.log(result);
+      console.log(result);
 
       if (!result.cancelled) {
         setSelectedPicture(result.uri);
@@ -122,7 +123,7 @@ export default function ProfileScreen({ userId, userToken, setToken }) {
       setIsLoading(false);
     };
     fetchData();
-  }, []);
+  }, [profilePic]);
 
   return isLoading ? (
     <SafeAreaView>
@@ -133,13 +134,19 @@ export default function ProfileScreen({ userId, userToken, setToken }) {
       <Text>My profile id: {userId}</Text>
       <View style={styles.avatarZone}>
         <View style={styles.avatar}>
-          <Text>
+          {selectedPicture && (
+            <Image
+              style={{ height: 300, width: 300 }}
+              source={{ uri: selectedPicture }}
+            />
+          )}
+          {/* <Text>
             <MaterialCommunityIcons
               name="account"
               size={100}
               color="lightgrey"
             />
-          </Text>
+          </Text> */}
         </View>
         <View style={styles.btPicZone}>
           <TouchableOpacity onPress={getPermissionAndPhoto}>
@@ -209,6 +216,10 @@ const styles = StyleSheet.create({
   avatarZone: {
     flexDirection: "row",
     backgroundColor: "blue",
+  },
+
+  avatar: {
+    backgroundColor: "purple",
   },
 
   btPicZone: {
